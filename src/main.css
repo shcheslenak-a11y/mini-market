@@ -1,0 +1,13 @@
+.about {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.warn {
+  border: 2px solid gold;
+  border-radius: 40px;
+  margin: 2px;
+  padding: 4px;
+  background-color: yellow;
+}
