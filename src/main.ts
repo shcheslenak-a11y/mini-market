@@ -44,6 +44,6 @@ function renderCart() {}
 
 document.getElementById('about')?.addEventListener('click', renderAbout);
 document.getElementById('catalog')?.addEventListener('click', renderCatalog);
-document.getElementById('about')?.addEventListener('click', renderCart);
+document.getElementById('cart')?.addEventListener('click', renderCart);
 
 renderAbout();
