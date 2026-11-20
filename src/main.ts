@@ -140,8 +140,6 @@ function renderCatalog() {
 }
 
 function renderCart() {
-  if (selected === 'cart') return;
-
   main.replaceChildren();
 
   const cartPage = createElement('div', { class: 'cart-page' });
@@ -153,10 +151,37 @@ function renderCart() {
     cart.forEach((item) => {
       const cartItem = createElement('div', { class: 'cart-item' });
 
+      const decreaseButton = createElement('button', {}, '−');
+      const increaseButton = createElement('button', {}, '+');
+      const removeButton = createElement('button', {}, 'Удалить');
+
+      decreaseButton.addEventListener('click', () => {
+        if (item.quantity > 1) {
+          item.quantity -= 1;
+        } else {
+          cart.splice(cart.indexOf(item), 1);
+        }
+
+        renderCart();
+      });
+
+      increaseButton.addEventListener('click', () => {
+        item.quantity += 1;
+        renderCart();
+      });
+
+      removeButton.addEventListener('click', () => {
+        cart.splice(cart.indexOf(item), 1);
+        renderCart();
+      });
+
       cartItem.append(
         createElement('h3', {}, item.product.name),
         createElement('p', {}, `Цена: $${item.product.price}`),
-        createElement('p', {}, `Количество: ${item.quantity}`),
+        decreaseButton,
+        createElement('span', {}, ` ${item.quantity} `),
+        increaseButton,
+        removeButton,
       );
 
       cartPage.append(cartItem);
