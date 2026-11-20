@@ -8,6 +8,13 @@ import { getData } from './getData';
 const main = document.getElementsByTagName('main')[0];
 let selected = 'none';
 
+type CartItem = {
+  product: cartData;
+  quantity: number;
+};
+
+const cart: CartItem[] = [];
+
 function createElement(tag: string, attibutes = {}, innerText: string | null = null) {
   const element = document.createElement(tag);
   for (const [key, value] of Object.entries(attibutes)) element.setAttribute(key, String(value));
@@ -41,20 +48,43 @@ function renderAbout() {
   main.append(about);
   selected = 'about';
 }
+function addToCart(product: cartData) {
+  const existingItem = cart.find((item) => item.product.id === product.id);
+
+  if (existingItem) {
+    existingItem.quantity += 1;
+  } else {
+    cart.push({
+      product,
+      quantity: 1,
+    });
+  }
+}
 
 function createCard(cartData: cartData) {
   const card = createElement('div', { class: 'cart' });
   const imgBox = createElement('div', { class: 'img-box' });
-  imgBox.append(createElement('img', { src: cartData.img || 'placeholder.png', alt: 'Image' }));
+
+  imgBox.append(
+    createElement('img', {
+      src: cartData.img || 'placeholder.png',
+      alt: cartData.name,
+    }),
+  );
+
+  const addButton = createElement('button', { class: 'add-to-cart', type: 'button' }, 'В корзину');
+
+  addButton.addEventListener('click', () => {
+    addToCart(cartData);
+  });
+
   card.append(
     imgBox,
     createElement('h3', {}, cartData.name),
     createElement('label', {}, `$ ${cartData.price}`),
+    addButton,
   );
 
-  card.addEventListener('click', () => {
-    alert(`${cartData.id}: ${cartData.name}`);
-  });
   return card;
 }
 
@@ -109,7 +139,33 @@ function renderCatalog() {
   selected = 'catalog';
 }
 
-function renderCart() {}
+function renderCart() {
+  if (selected === 'cart') return;
+
+  main.replaceChildren();
+
+  const cartPage = createElement('div', { class: 'cart-page' });
+  cartPage.append(createElement('h2', {}, 'Корзина'));
+
+  if (cart.length === 0) {
+    cartPage.append(createElement('p', {}, 'Корзина пуста'));
+  } else {
+    cart.forEach((item) => {
+      const cartItem = createElement('div', { class: 'cart-item' });
+
+      cartItem.append(
+        createElement('h3', {}, item.product.name),
+        createElement('p', {}, `Цена: $${item.product.price}`),
+        createElement('p', {}, `Количество: ${item.quantity}`),
+      );
+
+      cartPage.append(cartItem);
+    });
+  }
+
+  main.append(cartPage);
+  selected = 'cart';
+}
 
 document.getElementById('about')?.addEventListener('click', renderAbout);
 document.getElementById('catalog')?.addEventListener('click', renderCatalog);
