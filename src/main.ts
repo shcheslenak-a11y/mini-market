@@ -1,5 +1,9 @@
 import './style.css';
 import './main.css';
+import './catalog.css';
+import './types';
+import type { cartData } from './types';
+import { getData } from './getData';
 
 const main = document.getElementsByTagName('main')[0];
 let selected = 'none';
@@ -38,7 +42,72 @@ function renderAbout() {
   selected = 'about';
 }
 
-function renderCatalog() {}
+function createCard(cartData: cartData) {
+  const card = createElement('div', { class: 'cart' });
+  const imgBox = createElement('div', { class: 'img-box' });
+  imgBox.append(createElement('img', { src: cartData.img || 'placeholder.png', alt: 'Image' }));
+  card.append(
+    imgBox,
+    createElement('h3', {}, cartData.name),
+    createElement('label', {}, `$ ${cartData.price}`),
+  );
+
+  card.addEventListener('click', () => {
+    alert(`${cartData.id}: ${cartData.name}`);
+  });
+  return card;
+}
+
+function renderProducts(items: HTMLElement) {
+  items.replaceChildren();
+  getData('data/products.json').then((data: Array<cartData>) => {
+    console.log(data);
+    items.append(...data.map(createCard));
+  });
+}
+
+function renderCategories(categories: HTMLElement) {
+  categories.replaceChildren();
+  getData('data/categories.json').then((data) => {
+    categories.append(
+      ...data.map((item: string) => {
+        const listItem = createElement('li');
+        listItem.append(
+          createElement('input', { type: 'checkbox' }),
+          createElement('label', {}, item),
+        );
+        return listItem;
+      }),
+    );
+  });
+}
+
+function renderCatalog() {
+  if (selected === 'catalog') return;
+  main.replaceChildren();
+  const catalog = createElement('div', { class: 'catalog' });
+  const products = createElement('div', { class: 'flex-column' });
+
+  const filters = createElement('div', { class: 'filters flex-column' });
+  const categories = createElement('ul');
+  filters.append(createElement('h2', {}, 'Categories'), categories);
+
+  const search = createElement('div', { class: 'search' });
+  const searchInput = createElement('input', { id: 'search' }) as HTMLInputElement;
+  search.append(createElement('img', { src: 'glass.png' }), searchInput);
+  const items = createElement('div', { class: 'items' });
+  searchInput.addEventListener('input', () => {
+    console.log(searchInput.value);
+    //TODO filter items
+    //renderProducts()
+  });
+  renderProducts(items);
+  renderCategories(categories);
+  products.append(search, items);
+  catalog.append(filters, products);
+  main.append(catalog);
+  selected = 'catalog';
+}
 
 function renderCart() {}
 
