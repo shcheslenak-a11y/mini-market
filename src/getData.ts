@@ -4,7 +4,13 @@ export function getData(source: string) {
   return fetch(source).then((resp) => resp.json());
 }
 
-export function getFilter(search: string, include: Array<string> = [], all: boolean = true) {
+export function getFilter(
+  search: string,
+  include: Array<string> = [],
+  all: boolean = true,
+  range: Array<string> = ['0', '0'],
+) {
+  console.log(range);
   return function (item: cartData): boolean {
     if (search.length && item.name.toLowerCase().search(search.toLowerCase()) < 0) return false;
     if (include.length) {
