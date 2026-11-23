@@ -43,6 +43,12 @@ function renderAbout() {
   selected = 'about';
 }
 
+function calculateCartTotal(): number {
+  return cart.reduce((total, item) => {
+    return total + item.product.price * item.quantity;
+  }, 0);
+}
+
 function createCard(cartData: cartData) {
   const card = createElement('div', { class: 'cart' });
   const imgBox = createElement('div', { class: 'img-box' });
@@ -175,6 +181,9 @@ function renderCart() {
   }
 
   main.append(cartPage);
+  cartPage.append(
+    createElement('h3', { class: 'cart-total' }, `Total: $${calculateCartTotal().toFixed(2)}`),
+  );
   selected = 'cart';
 }
 
