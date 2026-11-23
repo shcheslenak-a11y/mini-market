@@ -90,7 +90,9 @@ function renderProducts(items: HTMLElement, search: string = '') {
         selectedCategories.push((child.lastChild as HTMLTextAreaElement).innerText);
     }
   }
-  const filter = getFilter(search, selectedCategories);
+  const from = (document.getElementById('from') as HTMLInputElement)?.value || '0';
+  const to = (document.getElementById('to') as HTMLInputElement)?.value || '0';
+  const filter = getFilter(search, selectedCategories, true, [from, to]);
 
   items.replaceChildren();
   getData('data/products.json')
@@ -100,11 +102,7 @@ function renderProducts(items: HTMLElement, search: string = '') {
     });
 }
 
-function renderCategories(
-  categories: HTMLElement,
-  searchBar: HTMLInputElement,
-  items: HTMLElement,
-) {
+function renderCategories(categories: HTMLElement) {
   categories.replaceChildren();
   getData('data/categories.json').then((data) => {
     categories.append(
@@ -112,10 +110,6 @@ function renderCategories(
         const listItem = createElement('li');
         const checkbox = createElement('input', { type: 'checkbox' });
         listItem.append(checkbox, createElement('label', {}, item));
-        checkbox.addEventListener('change', () => {
-          renderProducts(items, searchBar.value);
-        });
-
         return listItem;
       }),
     );
@@ -130,7 +124,27 @@ function renderCatalog() {
 
   const filters = createElement('div', { class: 'filters flex-column' });
   const categories = createElement('ul', { id: 'select-category' });
-  filters.append(createElement('h2', {}, 'Categories'), categories);
+  const priceRange = createElement('div');
+  priceRange.append(
+    'From:',
+    createElement('input', { id: 'from', type: 'number', min: '0', max: '100000' }),
+    createElement('br'),
+    'To:',
+    createElement('input', { id: 'to', type: 'number', min: '0', max: '100000' }),
+  );
+
+  const applyButton = createElement('div', { class: 'button' }, 'Apply');
+  applyButton.addEventListener('click', () => {
+    renderProducts(items);
+  });
+
+  filters.append(
+    createElement('h2', {}, 'Categories'),
+    categories,
+    createElement('h2', {}, 'Price'),
+    priceRange,
+    applyButton,
+  );
 
   const search = createElement('div', { class: 'search' });
   const searchInput = createElement('input', { id: 'search' }) as HTMLInputElement;
@@ -139,7 +153,7 @@ function renderCatalog() {
   searchInput.addEventListener('input', () => {
     renderProducts(items, searchInput.value);
   });
-  renderCategories(categories, searchInput, items);
+  renderCategories(categories);
   renderProducts(items);
   products.append(search, items);
   catalog.append(filters, products);

@@ -46,3 +46,13 @@ footer img {
   border-radius: 90px;
   border: 1px solid black;
 }
+
+.button {
+  padding: 5px;
+  border-radius: 15px;
+  background-color: blue;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
