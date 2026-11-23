@@ -182,7 +182,7 @@ function renderCart() {
 
   main.append(cartPage);
   cartPage.append(
-    createElement('h3', { class: 'cart-total' }, `Итого: $${calculateCartTotal().toFixed(2)}`),
+    createElement('h3', { class: 'cart-total' }, `Total: $${calculateCartTotal().toFixed(2)}`),
   );
   selected = 'cart';
 }
