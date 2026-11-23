@@ -4,16 +4,10 @@ import './catalog.css';
 import './types';
 import type { cartData } from './types';
 import { getData } from './getData';
+import { cart, addToCart } from './cart';
 
 const main = document.getElementsByTagName('main')[0];
 let selected = 'none';
-
-type CartItem = {
-  product: cartData;
-  quantity: number;
-};
-
-const cart: CartItem[] = [];
 
 function createElement(tag: string, attibutes = {}, innerText: string | null = null) {
   const element = document.createElement(tag);
@@ -48,18 +42,6 @@ function renderAbout() {
   main.append(about);
   selected = 'about';
 }
-function addToCart(product: cartData) {
-  const existingItem = cart.find((item) => item.product.id === product.id);
-
-  if (existingItem) {
-    existingItem.quantity += 1;
-  } else {
-    cart.push({
-      product,
-      quantity: 1,
-    });
-  }
-}
 
 function createCard(cartData: cartData) {
   const card = createElement('div', { class: 'cart' });
@@ -72,7 +54,11 @@ function createCard(cartData: cartData) {
     }),
   );
 
-  const addButton = createElement('button', { class: 'add-to-cart', type: 'button' }, 'В корзину');
+  const addButton = createElement(
+    'button',
+    { class: 'add-to-cart', type: 'button' },
+    'Add to cart',
+  );
 
   addButton.addEventListener('click', () => {
     addToCart(cartData);
@@ -143,10 +129,10 @@ function renderCart() {
   main.replaceChildren();
 
   const cartPage = createElement('div', { class: 'cart-page' });
-  cartPage.append(createElement('h2', {}, 'Корзина'));
+  cartPage.append(createElement('h2', {}, 'Cart'));
 
   if (cart.length === 0) {
-    cartPage.append(createElement('p', {}, 'Корзина пуста'));
+    cartPage.append(createElement('p', {}, 'Cart is empty'));
   } else {
     cart.forEach((item) => {
       const cartItem = createElement('div', { class: 'cart-item' });
