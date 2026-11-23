@@ -10,7 +10,8 @@ export function getFilter(
   all: boolean = true,
   range: Array<string> = ['0', '0'],
 ) {
-  console.log(range);
+  const left = Number(range[0]) || -1;
+  const rigth = Number(range[1]) || Infinity;
   return function (item: cartData): boolean {
     if (search.length && item.name.toLowerCase().search(search.toLowerCase()) < 0) return false;
     if (include.length) {
@@ -23,6 +24,7 @@ export function getFilter(
       }
       if (!founded) return false;
     }
+    if (item.price < left || item.price > rigth) return false;
     return true;
   };
 }
