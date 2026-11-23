@@ -4,6 +4,7 @@ import './catalog.css';
 import './types';
 import type { cartData } from './types';
 import { getData } from './getData';
+import { cart, addToCart } from './cart';
 
 const main = document.getElementsByTagName('main')[0];
 let selected = 'none';
@@ -45,16 +46,31 @@ function renderAbout() {
 function createCard(cartData: cartData) {
   const card = createElement('div', { class: 'cart' });
   const imgBox = createElement('div', { class: 'img-box' });
-  imgBox.append(createElement('img', { src: cartData.img || 'placeholder.png', alt: 'Image' }));
+
+  imgBox.append(
+    createElement('img', {
+      src: cartData.img || 'placeholder.png',
+      alt: cartData.name,
+    }),
+  );
+
+  const addButton = createElement(
+    'button',
+    { class: 'add-to-cart', type: 'button' },
+    'Add to cart',
+  );
+
+  addButton.addEventListener('click', () => {
+    addToCart(cartData);
+  });
+
   card.append(
     imgBox,
     createElement('h3', {}, cartData.name),
     createElement('label', {}, `$ ${cartData.price}`),
+    addButton,
   );
 
-  card.addEventListener('click', () => {
-    alert(`${cartData.id}: ${cartData.name}`);
-  });
   return card;
 }
 
@@ -109,7 +125,33 @@ function renderCatalog() {
   selected = 'catalog';
 }
 
-function renderCart() {}
+function renderCart() {
+  if (selected === 'cart') return;
+
+  main.replaceChildren();
+
+  const cartPage = createElement('div', { class: 'cart-page' });
+  cartPage.append(createElement('h2', {}, 'Cart'));
+
+  if (cart.length === 0) {
+    cartPage.append(createElement('p', {}, 'Cart is empty'));
+  } else {
+    cart.forEach((item) => {
+      const cartItem = createElement('div', { class: 'cart-item' });
+
+      cartItem.append(
+        createElement('h3', {}, item.product.name),
+        createElement('p', {}, `Цена: $${item.product.price}`),
+        createElement('p', {}, `Количество: ${item.quantity}`),
+      );
+
+      cartPage.append(cartItem);
+    });
+  }
+
+  main.append(cartPage);
+  selected = 'cart';
+}
 
 document.getElementById('about')?.addEventListener('click', renderAbout);
 document.getElementById('catalog')?.addEventListener('click', renderCatalog);
