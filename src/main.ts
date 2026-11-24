@@ -3,7 +3,7 @@ import './main.css';
 import './catalog.css';
 import './types';
 import type { cartData } from './types';
-import { getData } from './getData';
+import { getData, getFilter, getSort } from './getData';
 import { cart, addToCart } from './cart';
 
 const main = document.getElementsByTagName('main')[0];
@@ -49,14 +49,14 @@ function calculateCartTotal(): number {
   }, 0);
 }
 
-function createCard(cartData: cartData) {
+function createCard(cardData: cartData) {
   const card = createElement('div', { class: 'cart' });
   const imgBox = createElement('div', { class: 'img-box' });
 
   imgBox.append(
     createElement('img', {
-      src: cartData.img || 'placeholder.png',
-      alt: cartData.name,
+      src: cardData.img || 'placeholder.png',
+      alt: cardData.name,
     }),
   );
 
@@ -67,25 +67,40 @@ function createCard(cartData: cartData) {
   );
 
   addButton.addEventListener('click', () => {
-    addToCart(cartData);
+    addToCart(cardData);
   });
 
   card.append(
     imgBox,
-    createElement('h3', {}, cartData.name),
-    createElement('label', {}, `$ ${cartData.price}`),
+    createElement('h3', {}, cardData.name),
+    createElement('label', {}, `$ ${cardData.price}`),
     addButton,
   );
 
   return card;
 }
 
-function renderProducts(items: HTMLElement) {
+function renderProducts(items: HTMLElement, search: string = '') {
+  const selectedCategories: Array<string> = [];
+  const children = document.getElementById('select-category')?.children || [];
+  const mode = (document.getElementById('sort') as HTMLSelectElement)?.value;
+  for (let i = 0; i < children.length; i += 1) {
+    const child = children[i];
+    if (child.tagName == 'LI') {
+      if ((child.firstChild as HTMLInputElement).checked)
+        selectedCategories.push((child.lastChild as HTMLTextAreaElement).innerText);
+    }
+  }
+  const from = (document.getElementById('from') as HTMLInputElement)?.value || '0';
+  const to = (document.getElementById('to') as HTMLInputElement)?.value || '0';
+  const filter = getFilter(search, selectedCategories, true, [from, to]);
+
   items.replaceChildren();
-  getData('data/products.json').then((data: Array<cartData>) => {
-    console.log(data);
-    items.append(...data.map(createCard));
-  });
+  getData('data/products.json')
+    .then((data: Array<cartData>) => data.filter(filter).toSorted(getSort(mode)))
+    .then((data: Array<cartData>) => {
+      items.append(...data.map(createCard));
+    });
 }
 
 function renderCategories(categories: HTMLElement) {
@@ -94,10 +109,8 @@ function renderCategories(categories: HTMLElement) {
     categories.append(
       ...data.map((item: string) => {
         const listItem = createElement('li');
-        listItem.append(
-          createElement('input', { type: 'checkbox' }),
-          createElement('label', {}, item),
-        );
+        const checkbox = createElement('input', { type: 'checkbox' });
+        listItem.append(checkbox, createElement('label', {}, item));
         return listItem;
       }),
     );
@@ -111,21 +124,49 @@ function renderCatalog() {
   const products = createElement('div', { class: 'flex-column' });
 
   const filters = createElement('div', { class: 'filters flex-column' });
-  const categories = createElement('ul');
-  filters.append(createElement('h2', {}, 'Categories'), categories);
+  const categories = createElement('ul', { id: 'select-category' });
+  const priceRange = createElement('div');
+  priceRange.append(
+    'From:',
+    createElement('input', { id: 'from', type: 'number', min: '0', max: '100000' }),
+    createElement('br'),
+    'To:',
+    createElement('input', { id: 'to', type: 'number', min: '0', max: '100000' }),
+  );
+
+  const applyButton = createElement('div', { class: 'button' }, 'Apply');
+  applyButton.addEventListener('click', () => {
+    renderProducts(items);
+  });
+
+  filters.append(
+    createElement('h2', {}, 'Categories'),
+    categories,
+    createElement('h2', {}, 'Price'),
+    priceRange,
+    applyButton,
+  );
 
   const search = createElement('div', { class: 'search' });
   const searchInput = createElement('input', { id: 'search' }) as HTMLInputElement;
+  const sort = createElement('select', { id: 'sort' });
+
+  sort.append(
+    createElement('option', { value: 'none' }, 'No sorting'),
+    createElement('option', { value: 'asc' }, 'Ascending'),
+    createElement('option', { value: 'desc' }, 'Descending'),
+  );
   search.append(createElement('img', { src: 'glass.png' }), searchInput);
   const items = createElement('div', { class: 'items' });
   searchInput.addEventListener('input', () => {
-    console.log(searchInput.value);
-    //TODO filter items
-    //renderProducts()
+    renderProducts(items, searchInput.value);
   });
-  renderProducts(items);
+  sort.addEventListener('change', () => {
+    renderProducts(items, searchInput.value);
+  });
   renderCategories(categories);
-  products.append(search, items);
+  renderProducts(items);
+  products.append(search, sort, items);
   catalog.append(filters, products);
   main.append(catalog);
   selected = 'catalog';
