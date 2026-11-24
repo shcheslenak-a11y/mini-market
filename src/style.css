@@ -11,7 +11,7 @@ body {
 
 main {
   padding: 24px;
-  height: 85vh;
+  height: 86vh;
 }
 
 header {
@@ -45,4 +45,14 @@ footer img {
   width: 90px;
   border-radius: 90px;
   border: 1px solid black;
+}
+
+.button {
+  padding: 5px;
+  border-radius: 15px;
+  background-color: blue;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

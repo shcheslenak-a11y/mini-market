@@ -3,7 +3,7 @@ import './main.css';
 import './catalog.css';
 import './types';
 import type { cartData } from './types';
-import { getData, getFilter } from './getData';
+import { getData, getFilter, getSort } from './getData';
 import { cart, addToCart } from './cart';
 
 const main = document.getElementsByTagName('main')[0];
@@ -83,6 +83,7 @@ function createCard(cardData: cartData) {
 function renderProducts(items: HTMLElement, search: string = '') {
   const selectedCategories: Array<string> = [];
   const children = document.getElementById('select-category')?.children || [];
+  const mode = (document.getElementById('sort') as HTMLSelectElement)?.value;
   for (let i = 0; i < children.length; i += 1) {
     const child = children[i];
     if (child.tagName == 'LI') {
@@ -90,21 +91,19 @@ function renderProducts(items: HTMLElement, search: string = '') {
         selectedCategories.push((child.lastChild as HTMLTextAreaElement).innerText);
     }
   }
-  const filter = getFilter(search, selectedCategories);
+  const from = (document.getElementById('from') as HTMLInputElement)?.value || '0';
+  const to = (document.getElementById('to') as HTMLInputElement)?.value || '0';
+  const filter = getFilter(search, selectedCategories, true, [from, to]);
 
   items.replaceChildren();
   getData('data/products.json')
-    .then((data: Array<cartData>) => data.filter(filter))
+    .then((data: Array<cartData>) => data.filter(filter).toSorted(getSort(mode)))
     .then((data: Array<cartData>) => {
       items.append(...data.map(createCard));
     });
 }
 
-function renderCategories(
-  categories: HTMLElement,
-  searchBar: HTMLInputElement,
-  items: HTMLElement,
-) {
+function renderCategories(categories: HTMLElement) {
   categories.replaceChildren();
   getData('data/categories.json').then((data) => {
     categories.append(
@@ -112,10 +111,6 @@ function renderCategories(
         const listItem = createElement('li');
         const checkbox = createElement('input', { type: 'checkbox' });
         listItem.append(checkbox, createElement('label', {}, item));
-        checkbox.addEventListener('change', () => {
-          renderProducts(items, searchBar.value);
-        });
-
         return listItem;
       }),
     );
@@ -130,18 +125,48 @@ function renderCatalog() {
 
   const filters = createElement('div', { class: 'filters flex-column' });
   const categories = createElement('ul', { id: 'select-category' });
-  filters.append(createElement('h2', {}, 'Categories'), categories);
+  const priceRange = createElement('div');
+  priceRange.append(
+    'From:',
+    createElement('input', { id: 'from', type: 'number', min: '0', max: '100000' }),
+    createElement('br'),
+    'To:',
+    createElement('input', { id: 'to', type: 'number', min: '0', max: '100000' }),
+  );
+
+  const applyButton = createElement('div', { class: 'button' }, 'Apply');
+  applyButton.addEventListener('click', () => {
+    renderProducts(items);
+  });
+
+  filters.append(
+    createElement('h2', {}, 'Categories'),
+    categories,
+    createElement('h2', {}, 'Price'),
+    priceRange,
+    applyButton,
+  );
 
   const search = createElement('div', { class: 'search' });
   const searchInput = createElement('input', { id: 'search' }) as HTMLInputElement;
+  const sort = createElement('select', { id: 'sort' });
+
+  sort.append(
+    createElement('option', { value: 'none' }, 'No sorting'),
+    createElement('option', { value: 'asc' }, 'Ascending'),
+    createElement('option', { value: 'desc' }, 'Descending'),
+  );
   search.append(createElement('img', { src: 'glass.png' }), searchInput);
   const items = createElement('div', { class: 'items' });
   searchInput.addEventListener('input', () => {
     renderProducts(items, searchInput.value);
   });
-  renderCategories(categories, searchInput, items);
+  sort.addEventListener('change', () => {
+    renderProducts(items, searchInput.value);
+  });
+  renderCategories(categories);
   renderProducts(items);
-  products.append(search, items);
+  products.append(search, sort, items);
   catalog.append(filters, products);
   main.append(catalog);
   selected = 'catalog';
