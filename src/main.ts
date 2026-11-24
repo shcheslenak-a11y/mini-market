@@ -66,8 +66,9 @@ function createCard(cardData: cartData, modal: HTMLDialogElement) {
     'Add to cart',
   );
 
-  addButton.addEventListener('click', () => {
+  addButton.addEventListener('click', (event: Event) => {
     addToCart(cardData);
+    event.stopPropagation();
   });
 
   card.append(
