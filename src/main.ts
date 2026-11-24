@@ -49,7 +49,7 @@ function calculateCartTotal(): number {
   }, 0);
 }
 
-function createCard(cardData: cartData) {
+function createCard(cardData: cartData, modal: HTMLDialogElement) {
   const card = createElement('div', { class: 'cart' });
   const imgBox = createElement('div', { class: 'img-box' });
 
@@ -77,10 +77,54 @@ function createCard(cardData: cartData) {
     addButton,
   );
 
+  card.addEventListener('click', () => {
+    const inner = modal.children[0] as HTMLElement;
+    inner.replaceChildren();
+
+    const modalImg = createElement('div', { class: 'img-box' });
+    modalImg.append(
+      createElement('img', {
+        src: cardData.img || 'placeholder.png',
+        alt: cardData.name,
+      }),
+    );
+    const maininfo = createElement('div', { id: 'main-info' });
+    const info = createElement('div');
+    const categories = createElement('div');
+    categories.append(
+      ...cardData.categories.map((item) => createElement('div', { class: 'category' }, item)),
+    );
+    const text = cardData.description.match(/[\s\S]{1,5}/g) || [];
+
+    info.append(createElement('p', {}, `$${cardData.price}`), categories);
+    maininfo.append(modalImg, info);
+
+    const buttons = createElement('div');
+    const closeButton = createElement('div', { class: 'button alt' }, 'Close');
+    const modalAddButton = createElement('div', { class: 'button' }, 'Add to Cart');
+
+    closeButton.addEventListener('click', () => {
+      modal.close();
+    });
+    modalAddButton.addEventListener('click', () => {
+      addToCart(cardData);
+      modal.close();
+    });
+    buttons.append(closeButton, modalAddButton);
+
+    inner.append(
+      createElement('h2', {}, cardData.name),
+      maininfo,
+      createElement('p', {}, text.join('  ')),
+      buttons,
+    );
+    modal.showModal();
+  });
+
   return card;
 }
 
-function renderProducts(items: HTMLElement, search: string = '') {
+function renderProducts(items: HTMLElement, search: string = '', modal: HTMLDialogElement) {
   const selectedCategories: Array<string> = [];
   const children = document.getElementById('select-category')?.children || [];
   const mode = (document.getElementById('sort') as HTMLSelectElement)?.value;
@@ -99,7 +143,7 @@ function renderProducts(items: HTMLElement, search: string = '') {
   getData('data/products.json')
     .then((data: Array<cartData>) => data.filter(filter).toSorted(getSort(mode)))
     .then((data: Array<cartData>) => {
-      items.append(...data.map(createCard));
+      items.append(...data.map((item) => createCard(item, modal)));
     });
 }
 
@@ -135,9 +179,6 @@ function renderCatalog() {
   );
 
   const applyButton = createElement('div', { class: 'button' }, 'Apply');
-  applyButton.addEventListener('click', () => {
-    renderProducts(items);
-  });
 
   filters.append(
     createElement('h2', {}, 'Categories'),
@@ -150,7 +191,10 @@ function renderCatalog() {
   const search = createElement('div', { class: 'search' });
   const searchInput = createElement('input', { id: 'search' }) as HTMLInputElement;
   const sort = createElement('select', { id: 'sort' });
-
+  const modal = createElement('dialog') as HTMLDialogElement;
+  applyButton.addEventListener('click', () => {
+    renderProducts(items, searchInput.value, modal);
+  });
   sort.append(
     createElement('option', { value: 'none' }, 'No sorting'),
     createElement('option', { value: 'asc' }, 'Ascending'),
@@ -158,16 +202,21 @@ function renderCatalog() {
   );
   search.append(createElement('img', { src: 'glass.png' }), searchInput);
   const items = createElement('div', { class: 'items' });
+
   searchInput.addEventListener('input', () => {
-    renderProducts(items, searchInput.value);
+    renderProducts(items, searchInput.value, modal);
   });
   sort.addEventListener('change', () => {
-    renderProducts(items, searchInput.value);
+    renderProducts(items, searchInput.value, modal);
   });
   renderCategories(categories);
-  renderProducts(items);
+  renderProducts(items, '', modal);
+
+  modal.append(createElement('div'));
+
   products.append(search, sort, items);
-  catalog.append(filters, products);
+  catalog.append(filters, products, modal);
+
   main.append(catalog);
   selected = 'catalog';
 }
