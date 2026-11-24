@@ -3,7 +3,7 @@ import './main.css';
 import './catalog.css';
 import './types';
 import type { cartData } from './types';
-import { getData, getFilter } from './getData';
+import { getData, getFilter, getSort } from './getData';
 import { cart, addToCart } from './cart';
 
 const main = document.getElementsByTagName('main')[0];
@@ -83,6 +83,7 @@ function createCard(cardData: cartData) {
 function renderProducts(items: HTMLElement, search: string = '') {
   const selectedCategories: Array<string> = [];
   const children = document.getElementById('select-category')?.children || [];
+  const mode = (document.getElementById('sort') as HTMLSelectElement)?.value;
   for (let i = 0; i < children.length; i += 1) {
     const child = children[i];
     if (child.tagName == 'LI') {
@@ -96,7 +97,7 @@ function renderProducts(items: HTMLElement, search: string = '') {
 
   items.replaceChildren();
   getData('data/products.json')
-    .then((data: Array<cartData>) => data.filter(filter))
+    .then((data: Array<cartData>) => data.filter(filter).toSorted(getSort(mode)))
     .then((data: Array<cartData>) => {
       items.append(...data.map(createCard));
     });
@@ -148,14 +149,24 @@ function renderCatalog() {
 
   const search = createElement('div', { class: 'search' });
   const searchInput = createElement('input', { id: 'search' }) as HTMLInputElement;
+  const sort = createElement('select', { id: 'sort' });
+
+  sort.append(
+    createElement('option', { value: 'none' }, 'No sorting'),
+    createElement('option', { value: 'asc' }, 'Ascending'),
+    createElement('option', { value: 'desc' }, 'Descending'),
+  );
   search.append(createElement('img', { src: 'glass.png' }), searchInput);
   const items = createElement('div', { class: 'items' });
   searchInput.addEventListener('input', () => {
     renderProducts(items, searchInput.value);
   });
+  sort.addEventListener('change', () => {
+    renderProducts(items, searchInput.value);
+  });
   renderCategories(categories);
   renderProducts(items);
-  products.append(search, items);
+  products.append(search, sort, items);
   catalog.append(filters, products);
   main.append(catalog);
   selected = 'catalog';

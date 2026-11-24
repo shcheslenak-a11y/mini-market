@@ -28,3 +28,14 @@ export function getFilter(
     return true;
   };
 }
+
+export function getSort(mode: string) {
+  switch (mode) {
+    case 'asc':
+      return (a: cartData, b: cartData) => a.price - b.price;
+    case 'desc':
+      return (a: cartData, b: cartData) => b.price - a.price;
+    default:
+      return () => 0;
+  }
+}
