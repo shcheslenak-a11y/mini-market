@@ -4,4 +4,5 @@ export interface cartData {
   price: number;
   img: string;
   categories: Array<string>;
+  description: string;
 }
