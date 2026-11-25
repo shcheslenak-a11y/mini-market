@@ -4,7 +4,7 @@ import './catalog.css';
 import './types';
 import type { cartData } from './types';
 import { getData, getFilter, getSort } from './getData';
-import { cart, addToCart } from './cart';
+import { cart, addToCart, calculateCartTotal } from './cart';
 
 const main = document.getElementsByTagName('main')[0];
 let selected = 'none';
@@ -58,12 +58,6 @@ function renderAbout() {
   );
   main.append(about);
   selected = 'about';
-}
-
-function calculateCartTotal(): number {
-  return cart.reduce((total, item) => {
-    return total + item.product.price * item.quantity;
-  }, 0);
 }
 
 function createCard(cardData: cartData) {
@@ -240,7 +234,7 @@ function renderCart() {
 
   main.append(cartPage);
   cartPage.append(
-    createElement('h3', { class: 'cart-total' }, `Total: $${calculateCartTotal().toFixed(2)}`),
+    createElement('h3', { class: 'cart-total' }, `Total: $${calculateCartTotal(cart).toFixed(2)}`),
   );
   selected = 'cart';
 }
