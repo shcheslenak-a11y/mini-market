@@ -20,6 +20,21 @@ function renderAbout() {
   if (selected === 'about') return;
   main.replaceChildren();
   const about = createElement('div', { class: 'about' });
+  const author1 = createElement('p');
+  const author2 = createElement('p');
+  author1.append(
+    createElement('a', { href: 'https://github.com/sailoksis' }, 'Aleksandr(@sailoksis)'),
+    `: Implemented the shopping cart functionality, including adding products, changing quantities, removing items, and calculating the total price. Refactored cart logic into a separate module and improved the code based on teammate feedback during code reviews.`,
+  );
+
+  author2.append(
+    createElement(
+      'a',
+      { href: 'https://github.com/shcheslenak-a11y' },
+      'Andrei(@shcheslenak-a11y)',
+    ),
+    `: Implemented the catalog functionality, including category and price filtering, sorting, and rendering results. Conducting code reviews to improve code quality and readability.`,
+  );
   about.append(
     createElement(
       'p',
@@ -37,7 +52,9 @@ function renderAbout() {
     createElement('label', {}, `About: Description of project(You're here)`),
     createElement('label', {}, `Catalog: Panel of product among which you can select.`),
     createElement('label', {}, `Cart: List of selected products`),
-    createElement('p', {}, `Task was complited by Aleksandr Shunko and Andrei Shcheslenak`),
+    createElement('p', {}, `Task was completed by Aleksandr Shunko and Andrei Shcheslenak`),
+    author1,
+    author2,
   );
   main.append(about);
   selected = 'about';
