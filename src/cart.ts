@@ -16,3 +16,9 @@ export function addToCart(product: cartData): void {
     cart.push({ product, quantity: 1 });
   }
 }
+
+export function calculateCartTotal(items: CartItem[]): number {
+  return items.reduce((total, item) => {
+    return total + item.product.price * item.quantity;
+  }, 0);
+}
